@@ -114,7 +114,7 @@ app.put('/todos/:id', function (req, res) {
     }
 
     if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
-        validAttributes.description = body.description;
+        validAttributes.description = body.description.trim();
     } else if (body.hasOwnProperty('description')) {
         return res.status(400).send();
     }
