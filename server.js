@@ -3,24 +3,21 @@
  * Todo MODEL = single todo
  */
 
+
+
 var express = require('express'),
+    bodyParser = require('body-parser'),
     app = express(),
-    todos = [{
-        id: 1,
-        description: 'Meet Mum for lunch',
-        completed: false
-    }, {
-        id: 2,
-        description: 'Go to market',
-        completed: false
-    }, {
-        id: 3,
-        description: 'Storm through node.js course',
-        completed: true
-    }];
+    todos = [],
+    todoNextId = 1;
 
 
 const PORT = process.env.PORT || 3000;
+
+
+
+// MIDDLEWARE
+app.use(bodyParser.json());
 
 
 
@@ -53,6 +50,19 @@ app.get('/todos/:id', function (req, res) {
         res.status(404).send();
     }
 });
+
+
+
+// POST /todos
+app.post('/todos', function (req, res) {
+    var body = req.body;
+
+    body.id = todoNextId++;
+    todos.push(body);
+
+    res.json(body);
+});
+
 
 
 // Listen up...
