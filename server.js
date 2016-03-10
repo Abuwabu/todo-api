@@ -38,11 +38,11 @@ app.get('/todos', function (req, res) {
 
 // GET /todos/:id
 app.get('/todos/:id', function (req, res) {
-    var todoId = req.params.id,
+    var todoId = parseInt(req.params.id, 10), // typeof req.params.id = 'string'. Convert to number
         matchedTodo;
     
     todos.forEach(function(todo){
-        if (todo.id === parseInt(todoId, 10)) {
+        if (todo.id === todoId) {
             matchedTodo = todo;
         }
     });
