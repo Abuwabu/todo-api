@@ -56,14 +56,27 @@ app.get('/todos', function (req, res) {
 
 // GET /todos/:id
 app.get('/todos/:id', function (req, res) {
-    var todoId = parseInt(req.params.id, 10), // typeof req.params.id = 'string'. Convert to number
-        matchedTodo = _.findWhere(todos, {id: todoId});
+    var todoId = parseInt(req.params.id, 10);                   // typeof req.params.id = 'string'. Convert to number
 
-    if (matchedTodo) {
-        res.json(matchedTodo);
-    } else {
-        res.status(404).send();
-    }
+    db.todo.findById(todoId).then(function (todo) {
+        if (!!todo) {                                           // !! converts to BOOLEAN. todo = truthy. 1st ! = false. 2nd ! = true
+            res.json(todo.toJSON());
+        } else {
+            res.status(404).send();
+        }
+    }, function (e) {
+        res.status(500).send();                                 // 500 — problem with server
+    }); 
+    
+     
+    //    BEFORE DATABASE
+    //    var matchedTodo = _.findWhere(todos, {id: todoId});
+    //
+    //    if (matchedTodo) {
+    //        res.json(matchedTodo);
+    //    } else {
+    //        res.status(404).send();
+    //    }
 });
 
 
