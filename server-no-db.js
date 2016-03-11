@@ -8,8 +8,7 @@
 // REQUIREMENTS
 var express = require('express'),
     bodyParser = require('body-parser'),
-    _ = require('underscore'),
-    db = require('./db.js');
+    _ = require('underscore');
 
 
 
@@ -50,23 +49,20 @@ app.get('/todos', function (req, res) {
         });
     }
 
-    res.json(filteredTodos); // converted into json and sent back
+    res.json(filteredTodos);                                     // converted into json and sent back
 });
 
 
 // GET /todos/:id
 app.get('/todos/:id', function (req, res) {
-    var todoId = parseInt(req.params.id, 10);                   // typeof req.params.id = 'string'. Convert to number
-
-    db.todo.findById(todoId).then(function (todo) {
-        if (!!todo) {                                           // !! converts to BOOLEAN. todo = truthy. 1st ! = false. 2nd ! = true
-            res.json(todo.toJSON());
+    var todoId = parseInt(req.params.id, 10),                   // typeof req.params.id = 'string'. Convert to number
+        matchedTodo = _.findWhere(todos, {id: todoId});
+    
+        if (matchedTodo) {
+            res.json(matchedTodo);
         } else {
             res.status(404).send();
         }
-    }, function (e) {
-        res.status(500).send();                                 // 500 — problem with server
-    }); 
 });
 
 
@@ -74,12 +70,16 @@ app.get('/todos/:id', function (req, res) {
 // POST /todos
 app.post('/todos', function (req, res) {
     var body = _.pick(req.body, 'description', 'completed');
-        
-    db.todo.create(body).then(function(todo){
-        res.json(todo.toJSON());
-    }).catch(function(e){
-        res.status(400).json(e);
-    });
+
+    if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
+        return res.status(400).send(); // 400 — bad data provided
+    }
+
+    body.id = todoNextId++;
+    body.description = body.description.trim();
+    todos.push(body);
+
+    res.json(body);
 });
 
 
@@ -128,10 +128,7 @@ app.put('/todos/:id', function (req, res) {
 });
 
 
-
-// SYNC DB
-db.sequelize.sync().then(function () {
-    app.listen(PORT, function () {                                      // Listen up... 
-        console.log('Express listening on port ' + PORT + '!');
-    });
+// Listen up... 
+app.listen(PORT, function () {                                      
+    console.log('Express listening on port ' + PORT + '!');
 });
