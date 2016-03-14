@@ -45,8 +45,15 @@ app.get('/todos', function (req, res) {
     }
 
     if (query.hasOwnProperty('q') && query.q.length > 0) {
-        where.description = {
-            $like: '%' + query.q + '%'
+        
+        if (db.env === 'production') {
+            where.description = {
+                $iLike: '%' + query.q + '%'
+            }
+        } else {
+            where.description = {
+                $like: '%' + query.q + '%'
+            }
         }
     }
 
