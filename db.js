@@ -15,14 +15,15 @@ if (env === 'production') {
         dialect: 'postgres'
     });
 } else {
-    sequelize = new Sequelize(undefined, undefined, undefined, {        // (database, username, password, options {})
+    sequelize = new Sequelize(undefined, undefined, undefined, { // (database, username, password, options {})
         'dialect': 'sqlite',
         'storage': __dirname + '/data/dev-todo-api.sqlite'
     });
 }
 
 
-db.todo = sequelize.import(__dirname + '/models/todo.js');
+db.todo = sequelize.import(__dirname + '/models/todo.js'); // __dirname — current directory
+db.user = sequelize.import(__dirname + '/models/user.js');
 db.sequelize = sequelize;
 db.env = env;
 
