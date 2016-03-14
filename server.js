@@ -106,10 +106,10 @@ app.delete('/todos/:id', function (req, res) {
                 "error": "No todo found with that id"
             });
         } else {
-            res.status(204).send();                             // 204 — everything went well but nothing to send back
+            res.status(204).send(); // 204 — everything went well but nothing to send back
         }
     }, function () {
-        res.status(500).send(); 
+        res.status(500).send();
     });
 });
 
@@ -118,29 +118,30 @@ app.delete('/todos/:id', function (req, res) {
 // PUT /todos/:id
 app.put('/todos/:id', function (req, res) {
     var todoId = parseInt(req.params.id, 10),
-        matchedTodo = _.findWhere(todos, {id: todoId}),
         body = _.pick(req.body, 'description', 'completed'),
-        validAttributes = {};
+        attributes = {};
 
-    if (!matchedTodo) {
-        return res.status(404).send();
+    if (body.hasOwnProperty('completed')) {
+        attributes.completed = body.completed;
     }
 
-    if (body.hasOwnProperty('completed') && _.isBoolean(body.completed)) {
-        validAttributes.completed = body.completed;
-    } else if (body.hasOwnProperty('completed')) {
-        // Has property 'completed' but not boolean
-        return res.status(400).send();
+    if (body.hasOwnProperty('description')) {
+        attributes.description = body.description;
     }
 
-    if (body.hasOwnProperty('description') && _.isString(body.description) && body.description.trim().length > 0) {
-        validAttributes.description = body.description.trim();
-    } else if (body.hasOwnProperty('description')) {
-        return res.status(400).send();
-    }
-
-    _.extend(matchedTodo, validAttributes);
-    res.json(matchedTodo);
+    db.todo.findById(todoId).then(function (todo) {
+        if (todo) {
+            todo.update(attributes).then(function (todo) {
+                res.json(todo.toJSON());
+            }, function (e) {
+                res.status(400).json(e); // invalid syntax
+            });
+        } else {
+            res.status(404).send();
+        }
+    }, function () {
+        res.status(500).send();
+    });
 });
 
 
