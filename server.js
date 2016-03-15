@@ -170,9 +170,25 @@ app.post('/users', function (req, res) {
 // POST /users/login
 app.post('/users/login', function (req, res) {
     var body = _.pick(req.body, 'email', 'password');
-    
+        
     db.user.authenticate(body).then(function (user) {
-        res.json(user.toPublicJSON());
+        
+        
+        /* 
+         * If we have a successful login request we want to return a
+         * token in the header to the person using the API.
+         * Then they can make a bunch of request to create/edit todos
+         * without worrying about messing with someone else's todos.
+         */
+        
+        
+        var token = user.generateToken('authentication'); // 'authentication' — our bespoke type
+        
+        if (token) {
+            res.header('Auth', token).json(user.toPublicJSON());
+        } else {
+            res.send(401).send();
+        }
     }, function () {
         res.send(401).send();
     });

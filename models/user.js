@@ -1,7 +1,16 @@
-// Specific format for a file called with sequelize.import 
+/*
+ * Specific format for a file called with sequelize.import
+ */
 
+
+
+// THE REQUIREMENTS
 var bcrypt = require('bcrypt'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    cryptojs = require('crypto-js'),
+    jwt = require('jsonwebtoken');
+
+
 
 module.exports = function (sequelize, DataTypes) {
     var User = sequelize.define('user', {
@@ -67,7 +76,7 @@ module.exports = function (sequelize, DataTypes) {
                         if (!user || !bcrypt.compareSync(body.password, user.get('password_hash'))) {
                             return reject();
                         }
-
+  
                         resolve(user);
                     }, function (e) {
                         reject();
@@ -79,9 +88,30 @@ module.exports = function (sequelize, DataTypes) {
             toPublicJSON: function () {
                 var json = this.toJSON();
                 return _.pick(json, 'id', 'email', 'createdAt', 'updatedAt');
+            },
+            generateToken: function (type) { // create token that encrypts the users data
+                if (!_.isString(type)) {
+                    return undefined;
+                }
+
+                try {
+                    var stringData = JSON.stringify({
+                            id: this.get('id'),
+                            type: type
+                        }),
+                        encryptedData = cryptojs.AES.encrypt(stringData, "abc123").toString(), // encrypt id and token type 
+                        token = jwt.sign({ // 
+                            token: encryptedData
+                        }, 'qwerty098');
+
+                    return token;
+                } catch (e) {
+                    console.error(e); // really useful for debugging
+                    return undefined;
+                }
             }
         }
     });
-    
+
     return User;
 };
