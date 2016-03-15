@@ -6,24 +6,23 @@
 
 
 // REQUIREMENTS
-var express = require('express'),
-    bodyParser = require('body-parser'),
-    _ = require('underscore'),
-    db = require('./db.js'),
-    bcrypt = require('bcrypt');
+var _           = require('underscore'),
+    bcrypt      = require('bcrypt'),
+    bodyParser  = require('body-parser'),
+    db          = require('./db.js'),
+    express     = require('express'),
+    middleware  = require('./middleware.js')(db);    // exports a function — pass in the db
 
 
 
 // VARIABLES
-var app = express(),
-    todos = [],
-    todoNextId = 1;
+var app = express();
 
 const PORT = process.env.PORT || 3000;
 
 
 
-// MIDDLEWARE
+// APP-LEVEL MIDDLEWARE
 app.use(bodyParser.json());
 
 
@@ -35,7 +34,7 @@ app.get('/', function (req, res) {
 
 
 // GET /todos
-app.get('/todos', function (req, res) {
+app.get('/todos', middleware.requireAuthentication, function (req, res) {       // route-level middleware
     var query = req.query,
         where = {};
 
@@ -71,7 +70,7 @@ app.get('/todos', function (req, res) {
 
 
 // GET /todos/:id
-app.get('/todos/:id', function (req, res) {
+app.get('/todos/:id', middleware.requireAuthentication, function (req, res) {
     var todoId = parseInt(req.params.id, 10);                   // typeof req.params.id = 'string'. Convert to number
 
     db.todo.findById(todoId).then(function (todo) {
@@ -88,7 +87,7 @@ app.get('/todos/:id', function (req, res) {
 
 
 // POST /todos
-app.post('/todos', function (req, res) {
+app.post('/todos', middleware.requireAuthentication, function (req, res) {
     var body = _.pick(req.body, 'description', 'completed');
         
     db.todo.create(body).then(function(todo){
@@ -101,7 +100,7 @@ app.post('/todos', function (req, res) {
 
 
 // DELETE /todos/:id
-app.delete('/todos/:id', function (req, res) {
+app.delete('/todos/:id', middleware.requireAuthentication, function (req, res) {
     var todoId = parseInt(req.params.id, 10);
 
     db.todo.destroy({
@@ -124,7 +123,7 @@ app.delete('/todos/:id', function (req, res) {
 
 
 // PUT /todos/:id
-app.put('/todos/:id', function (req, res) {
+app.put('/todos/:id', middleware.requireAuthentication, function (req, res) {
     var todoId = parseInt(req.params.id, 10),
         body = _.pick(req.body, 'description', 'completed'),
         attributes = {};
