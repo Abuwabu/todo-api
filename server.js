@@ -9,7 +9,8 @@
 var express = require('express'),
     bodyParser = require('body-parser'),
     _ = require('underscore'),
-    db = require('./db.js');
+    db = require('./db.js'),
+    bcrypt = require('bcrypt');
 
 
 
@@ -166,8 +167,21 @@ app.post('/users', function (req, res) {
 
 
 
+// POST /users/login
+app.post('/users/login', function (req, res) {
+    var body = _.pick(req.body, 'email', 'password');
+    
+    db.user.authenticate(body).then(function (user) {
+        res.json(user.toPublicJSON());
+    }, function () {
+        res.send(401).send();
+    });
+});
+
+
+
 // SYNC DB & listen up...
-db.sequelize.sync().then(function () { // db.sequelize.sync({force: true})... to force complete rebuild of databses
+db.sequelize.sync({force: true}).then(function () { // db.sequelize.sync({force: true})... to force complete rebuild of databses
     app.listen(PORT, function () {                                 
         console.log('Express listening on port ' + PORT + '!');
     });
