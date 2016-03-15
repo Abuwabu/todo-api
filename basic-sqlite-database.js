@@ -7,12 +7,12 @@ var Sequelize = require('sequelize'),
 
 // MODELS
 
-var Todo = sequelize.define('todo', {       // (modelname, {attributes})
+var Todo = sequelize.define('todo', { // (modelname, {attributes})
     description: {
         type: Sequelize.STRING,
         allowNull: false,
         validate: {
-            len: [1, 250]                   // description must be between 1-250 chars. || notEmpty: true
+            len: [1, 250] // description must be between 1-250 chars. || notEmpty: true
         }
     },
     completed: {
@@ -22,13 +22,15 @@ var Todo = sequelize.define('todo', {       // (modelname, {attributes})
     }
 });
 
-sequelize.sync({force: true}).then(function () {    // force: true — automatically drops all tables & re-create them
+sequelize.sync({
+    force: true
+}).then(function () { // force: true — automatically drops all tables & re-create them
     console.log("Everything is sync'd");
 
     Todo.create({
         description: "Walk my dog",
         completed: false
-    }).then(function(todo) {
+    }).then(function (todo) {
         return Todo.create({
             description: "Take out rubbish"
         });
@@ -36,16 +38,16 @@ sequelize.sync({force: true}).then(function () {    // force: true — automatic
         // return Todo.findById(1);
         return Todo.findAll({
             where: {
-                completed: false,                   // search for todos where completed: false
-                description : {
-                    $like: '%rubbish%'              // %% — don't care if other content on either side of search. case insensitive
+                completed: false, // search for todos where completed: false
+                description: {
+                    $like: '%rubbish%' // %% — don't care if other content on either side of search. case insensitive
                 }
             }
         });
     }).then(function (todos) {
         if (todos) {
             todos.forEach(function (todo) {
-              console.log(todo.toJSON());
+                console.log(todo.toJSON());
             });
         } else {
             console.log('No todos found!');
