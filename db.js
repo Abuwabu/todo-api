@@ -1,19 +1,27 @@
-/*
- * load all modules into sequelize 
- * return that db connection to server.js
- * which will call this file
+/**
+ * Load all modules into sequelize and return {object} db
+ * db contains db instance, models, and env.
+ * 
+ * @module        db
+ * @summary       Load all modules into sequelize and export db 
+ * @requires      sequelize        
  */
 
 
 
-var env = process.env.NODE_ENV || 'development';
+// NPM REQUIREMENTS
 var Sequelize = require('sequelize');
+
+
+// NODE_ENV = 'production' on Heroku
+var env = process.env.NODE_ENV || 'development';
 var sequelize;
 var db = {};
 
 
 if (env === 'production') {
 
+  // DATABASE_URL contains pointer to db on Heroku
   sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres'
   });
@@ -25,8 +33,8 @@ if (env === 'production') {
     'dialect': 'sqlite',
     'storage': __dirname + '/data/dev-todo-api.sqlite'
   });
-}
 
+}
 
 // __dirname — current directory
 db.todo = sequelize.import(__dirname + '/models/todo.js');
@@ -34,6 +42,7 @@ db.user = sequelize.import(__dirname + '/models/user.js');
 db.sequelize = sequelize;
 db.env = env;
 
+// Associations
 db.todo.belongsTo(db.user);
 db.user.hasMany(db.todo);
 

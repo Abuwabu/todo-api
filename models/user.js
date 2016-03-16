@@ -1,10 +1,25 @@
-/*
- * Specific format for a file called with sequelize.import
+/**
+ * User model exported in the specific format
+ * for a file called with sequelize.import 
+ * 
+ * @module        user
+ * @summary       user model/method definitions for todo-api
+ * 
+ * @requires      underscore
+ * @requires      bcrypt
+ * @requires      crypto-js
+ * @requires      jsonwebtoken
+ * 
+ * @param         {object} sequelize — db instance
+ * @param         {object} DataTypes — sequelize convenience class of data types
+ * @returns       {object} User — model definition
+ * 
+ * @todo          abstract passwords in findByToken()
  */
 
 
 
-// THE REQUIREMENTS
+// NPM REQUIREMENTS
 var bcrypt = require('bcrypt');
 var _ = require('underscore');
 var cryptojs = require('crypto-js');
@@ -25,14 +40,12 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
 
-    /*
-     * A salt is random data that is used as an additional input
-     * to a one-way function that "hashes" a password or passphrase.
-     * The primary function of salts is to defend against dictionary
-     * attacks versus a list of password hashes and against pre-computed
-     * rainbow table attacks.
-     */
-
+    // A salt is random data that is used as an additional input
+    // to a one-way function that "hashes" a password or passphrase.
+    // The primary function of salts is to defend against dictionary
+    // attacks versus a list of password hashes and against pre-computed
+    // rainbow table attacks.
+     
     salt: {
       type: DataTypes.STRING
     },
@@ -40,7 +53,7 @@ module.exports = function (sequelize, DataTypes) {
       type: DataTypes.STRING
     },
     password: {
-
+      
       // Sequelize VIRTUAL datatype is accessible but isn't stored on the db
       type: DataTypes.VIRTUAL,
       allowNull: false,
@@ -50,8 +63,8 @@ module.exports = function (sequelize, DataTypes) {
       set: function (value) {
 
         // Number of chars for salt
-        var salt = bcrypt.genSaltSync(10),
-          hashedPassword = bcrypt.hashSync(value, salt);
+        var salt = bcrypt.genSaltSync(10);
+        var hashedPassword = bcrypt.hashSync(value, salt);
 
         this.setDataValue('password', value);
         this.setDataValue('salt', salt);
@@ -60,6 +73,12 @@ module.exports = function (sequelize, DataTypes) {
     }
   }, {
     hooks: {
+      
+      /*
+       * @function        beforeValidate
+       * @summary         convert email to lowecase before validating
+       */
+      
       beforeValidate: function (user, options) {
         if (typeof user.email === 'string') {
           user.email = user.email.toLowerCase();
@@ -67,6 +86,17 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     classMethods: {
+      
+      /** 
+       * Check email and password are strings. Find user from the db.
+       * Compare input password with password_hash
+       * Return {object} user or reject
+       * 
+       * @function      authenticate
+       * @summary       Authenticate login details
+       * @returns       {promise} resolve(user) || reject()
+       */
+      
       authenticate: function (body) {
         return new Promise(function (resolve, reject) {
 
@@ -90,14 +120,23 @@ module.exports = function (sequelize, DataTypes) {
             });
         });
       },
+      
+      /**
+       * Verify the web token is valid (unmodified) and decode with password.
+       * Decrypt token with password, convert to string, and parse from JSON
+       * Use id from token to find user and return user object
+       * 
+       * @function      findByToken
+       * @summary       find user data from signed web token
+       * @returns       {promise} resolve(user) || reject()
+       */
+      
       findByToken: function (token) {
         return new Promise(function (resolve, reject) {
           try {
-            // token hasn't been modified and is valid?
-            var decodedJWT = jwt.verify(token, 'qwerty098'),
-              // decrypt token
-              bytes = cryptojs.AES.decrypt(decodedJWT.token, 'abc123'),
-              tokenData = JSON.parse(bytes.toString(cryptojs.enc.Utf8));
+            var decodedJWT = jwt.verify(token, 'qwerty098');
+            var bytes = cryptojs.AES.decrypt(decodedJWT.token, 'abc123');
+            var tokenData = JSON.parse(bytes.toString(cryptojs.enc.Utf8));
 
             User.findById(tokenData.id)
               .then(function (user) {
@@ -112,11 +151,33 @@ module.exports = function (sequelize, DataTypes) {
       }
     },
     instanceMethods: {
+      
+      /**
+       * Convert user instance to JSON.
+       * Remove password, salts, and other sensitive data
+       * Return sanitised user instance.
+       * 
+       * @function      toPublicSON
+       * @summary       sanitise user object for public consumption
+       * @returns       {object} json — sanitised user instance
+       */
+      
       toPublicJSON: function () {
         var json = this.toJSON();
         return _.pick(json, 'id', 'email', 'createdAt', 'updatedAt');
       },
-      // create token that encrypts the users data
+      
+      /**
+       * Create token that encrypts the users data.
+       * Check token type is a string, 
+       * Encrypt id and type with a password
+       * Generate signed web token with encrypted data and second password
+       * 
+       * @function      generateToken
+       * @summary       Creates token that encrypts the users data.
+       * @returns       {string} token — signed web token.
+       */
+      
       generateToken: function (type) {
         if (!_.isString(type)) {
           return undefined;
@@ -127,8 +188,8 @@ module.exports = function (sequelize, DataTypes) {
               id: this.get('id'),
               type: type
             }),
-            encryptedData = cryptojs.AES.encrypt(stringData, "abc123").toString(), // encrypt id and token type 
-            token = jwt.sign({ // 
+            encryptedData = cryptojs.AES.encrypt(stringData, "abc123").toString(),
+            token = jwt.sign({
               token: encryptedData
             }, 'qwerty098');
 
