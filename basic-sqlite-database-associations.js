@@ -1,43 +1,48 @@
-var Sequelize = require('sequelize'),
-    sequelize = new Sequelize(undefined, undefined, undefined, { // (database, username, password, options {})
-        'dialect': 'sqlite',
-        'storage': 'basic-sqlite-database.sqlite'
-    });
+var Sequelize = require('sequelize');
+
+// (database, username, password, options {})
+var sequelize = new Sequelize(undefined, undefined, undefined, {
+  'dialect': 'sqlite',
+  'storage': 'basic-sqlite-database.sqlite'
+});
+
 
 
 // MODELS
 
-// Todo
-var Todo = sequelize.define('todo', { // (modelname, {attributes})
-    description: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        validate: {
-            len: [1, 250] // description must be between 1-250 chars. || notEmpty: true
-        }
-    },
-    completed: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
+// Todo  define(modelname, {attributes})
+var Todo = sequelize.define('todo', {
+  description: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    validate: {
+
+      // 1-250 chars or use notEmpty: true
+      len: [1, 250]
     }
+  },
+  completed: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  }
 });
 
 
 // User
 var User = sequelize.define('user', {
 
-    /*
-     * email: {
-     *     type: Sequelize.STRING
-     * }
-     * 
-     * abbreviated to:
-     * 
-     * email: Sequelize.STRING
-     */
+  /*
+   * email: {
+   *     type: Sequelize.STRING
+   * }
+   * 
+   * abbreviated to:
+   * 
+   * email: Sequelize.STRING
+   */
 
-    email: Sequelize.STRING
+  email: Sequelize.STRING
 });
 
 
@@ -50,7 +55,8 @@ User.hasMany(Todo);
 // SYNC
 sequelize.sync({
     //    force: true
-}).then(function () {
+  })
+  .then(function () {
     console.log("Everything is sync'd");
 
     //    User.create({
@@ -65,15 +71,19 @@ sequelize.sync({
     //        });
     //    });
 
-    User.findById(1).then(function (user) {
+    User.findById(1)
+      .then(function (user) {
+
+        // user.getTodos — built in Sequelize functionality
         user.getTodos({
             where: {
-                completed: false
+              completed: false
             }
-        }).then(function (todos) { // user.getTodos — built in Sequelize functionality
+          })
+          .then(function (todos) {
             todos.forEach(function (todo) {
-                console.log(todo.toJSON());
+              console.log(todo.toJSON());
             });
-        });
-    });
-});
+          });
+      });
+  });

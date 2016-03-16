@@ -4,25 +4,32 @@
  * which will call this file
  */
 
-var env = process.env.NODE_ENV || 'development',
-    Sequelize = require('sequelize'),
-    sequelize,
-    db = {};
+
+
+var env = process.env.NODE_ENV || 'development';
+var Sequelize = require('sequelize');
+var sequelize;
+var db = {};
 
 
 if (env === 'production') {
-    sequelize = new Sequelize(process.env.DATABASE_URL, {
-        dialect: 'postgres'
-    });
+
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres'
+  });
+
 } else {
-    sequelize = new Sequelize(undefined, undefined, undefined, { // (database, username, password, options {})
-        'dialect': 'sqlite',
-        'storage': __dirname + '/data/dev-todo-api.sqlite'
-    });
+
+  // (database, username, password, options {})
+  sequelize = new Sequelize(undefined, undefined, undefined, {
+    'dialect': 'sqlite',
+    'storage': __dirname + '/data/dev-todo-api.sqlite'
+  });
 }
 
 
-db.todo = sequelize.import(__dirname + '/models/todo.js'); // __dirname — current directory
+// __dirname — current directory
+db.todo = sequelize.import(__dirname + '/models/todo.js');
 db.user = sequelize.import(__dirname + '/models/user.js');
 db.sequelize = sequelize;
 db.env = env;
