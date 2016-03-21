@@ -96,7 +96,7 @@ app.get(
       .findById(todoId)
       .then(function (todo) {
 
-        // !! converts to BOOLEAN. todo = truthy. 1 x ! => false. 2 x ! => true
+        // !! converts truthy to BOOLEAN. todo = truthy. 1 x ! => false. 2 x ! => true
         if (!!todo) {
           res.json(todo.toJSON());
         } else {
@@ -268,7 +268,8 @@ app.post('/users/login', function userLogin (req, res) {
 db.sequelize
   .sync({ force: true })
   .then(function () {
-    app.listen(PORT, function () {
+
+    var server = app.listen(PORT, function () {
       console.log('Express listening on port ' + PORT + '!');
     });
   });
