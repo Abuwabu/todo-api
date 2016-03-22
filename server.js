@@ -14,7 +14,8 @@
 
 
 
-// CORE REQUIREMENTS — none
+// CORE REQUIREMENTS
+// none at the moment
 
 // NPM REQUIREMENTS
 var _ = require('underscore');
@@ -51,7 +52,9 @@ app.get('/', function goHome(req, res) {
 app.get('/todos', middleware.requireAuthentication, function getTodos(req, res) {
 
   var query = req.query;
-  var where = {};
+  var where = {
+    userId: req.user.get('id')
+  };
 
   if (query.hasOwnProperty('completed') && query.completed === 'false') {
     where.completed = false;
@@ -93,7 +96,12 @@ app.get(
     var todoId = parseInt(req.params.id, 10);
 
     db.todo
-      .findById(todoId)
+      .findOne({
+        where: {
+          id: todoId,
+          userId: req.user.get('id')
+        }
+      })
       .then(function (todo) {
 
         // !! converts truthy to BOOLEAN. todo = truthy. 1 x ! => false. 2 x ! => true
@@ -157,7 +165,8 @@ app.delete(
     db.todo
       .destroy({
         where: {
-          id: todoId
+          id: todoId,
+          userId: req.user.get('id')
         }
       })
       .then(function (rowsDeleted) {
@@ -195,7 +204,12 @@ app.put(
     }
 
     db.todo
-      .findById(todoId)
+      .findOne({
+        where: {
+          id: todoId,
+          userId: req.user.get('id')
+        }
+      })
       .then(function (todo) {
         if (todo) {
           todo
