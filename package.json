@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon server.js",
-    "test": "jasmine"
+    "test": ""
   },
   "author": "",
   "license": "ISC",
@@ -18,7 +18,6 @@
     "pg": "^4.4.1",
     "pg-hstore": "^2.3.2",
     "sequelize": "^3.5.1",
-    "sqlite3": "^3.0.10",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
@@ -27,6 +26,7 @@
     "mocha": "^2.4.5",
     "request": "^2.69.0",
     "sinon": "^1.17.3",
-    "sinon-as-promised": "^4.0.0"
+    "sinon-as-promised": "^4.0.0",
+    "sqlite3": "^3.0.10"
   }
 }

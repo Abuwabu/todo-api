@@ -104,7 +104,8 @@ app.get(
       })
       .then(function (todo) {
 
-        // !! converts truthy to BOOLEAN. todo = truthy. 1 x ! => false. 2 x ! => true
+        // !! converts truthy to BOOLEAN.
+        // todo = truthy. 1 x ! => false. 2 x ! => true
         if (!!todo) {
           res.json(todo.toJSON());
         } else {
