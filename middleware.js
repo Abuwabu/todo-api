@@ -5,9 +5,15 @@
  *  
  * @module        middleware
  * @summary       middleware functions for todo-api
+ * @requires      crypto-js
  * @param         {object} db — db connection, models, and env
  * @returns       {object} middleware — all middleware functionality
  */
+
+
+
+// NPM REQUIREMNTS
+cryptojs = require('crypto-js');
 
 
 
@@ -16,6 +22,7 @@ module.exports = function (db) {
     
     /**
      * Looks for the Auth token in the headers.
+     * Finds encrypted token hash in db.
      * Finds the associated user using a custom class method findByToken().
      * Adds user data to the req object.
      * 
@@ -27,16 +34,30 @@ module.exports = function (db) {
      */
     
     requireAuthentication: function (req, res, next) {
-      var token = req.get('Auth');
-
-      db.user
-        .findByToken(token)
-        .then(function addUserToReq(user) {
-          req.user = user
+      var token = req.get('Auth') || '';
+      
+      db.token
+        .findOne({
+          where: {
+            tokenHash: cryptojs.MD5(token).toString()
+          }
+        })
+      
+        .then(function addTokenToReq(tokenInstance) {
+          if (!tokenInstance) {
+            throw new Error();
+          }
+        
+          req.token = tokenInstance;
+          return db.user.findByToken(token);
+        })
+        
+        .then(function addUserToReq(user) { 
+          req.user = user;
           next();
-        }, function invalidData() {
-
-          // By not calling next() the process stops.
+        })
+        
+        .catch(function () {
           res.status(401).send();
         });
     }

@@ -253,28 +253,51 @@ app.post('/users', function postUser (req, res) {
 app.post('/users/login', function userLogin (req, res) {
   
   var body = _.pick(req.body, 'email', 'password');
+  var userInstance;
 
   db.user
     .authenticate(body)
     .then(function (user) {
     
-      // If we have a successful login request we want to return a
-      // token in the header to the person using the API.
+      // If we have a successful login request we want to save the token
+      // in the db, and return it in the header to the person using the API.
       // Then they can make a bunch of request to create/edit todos
       // without worrying about messing with someone else's todos.
 
       // 'authentication' — our bespoke type
       var token = user.generateToken('authentication');
-
-      if (token) {
-        res.header('Auth', token).json(user.toPublicJSON());
-      } else {
-        res.status(401).send();
-      }
-    }, function () {
+      userInstance = user;
+    
+      return db.token.create({
+        token: token
+      });
+    })
+    
+    .then(function (tokenInstance) {
+      res.header('Auth', tokenInstance.get('token')).json(userInstance.toPublicJSON());
+    })
+  
+    .catch(function () {
       res.status(401).send();
     });
 });
+
+
+
+// DELETE /users/login
+app.delete(
+  '/users/login',
+  middleware.requireAuthentication,
+  function userLogout (req, res) {
+    req.token
+      .destroy()
+      .then(function () {
+        res.status(204).send();
+      })
+      .catch(function () {
+        res.status(500).send(); 
+      });
+  });
 
 
 

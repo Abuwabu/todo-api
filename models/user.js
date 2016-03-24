@@ -76,7 +76,7 @@ module.exports = function (sequelize, DataTypes) {
       
       /*
        * @function        beforeValidate
-       * @summary         convert email to lowecase before validating
+       * @summary         convert email to lowercase before validating
        */
       
       beforeValidate: function (user, options) {
